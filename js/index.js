@@ -1,6 +1,5 @@
 'use strict';
-
-class BoardGame {
+export class BoardGame {
   constructor(targetClass, boardPixel, bgColor, boardSize) {
     this.targetClass = targetClass;
     this.boardPixel = boardPixel;
@@ -45,8 +44,8 @@ class BoardGame {
         const colDiv = document.createElement('div');
         colDiv.classList.add('col');
         colDiv.dataset.id = `${i}:${j}`;
-        colDiv.dataset.isBoard = true;
-        colDiv.dataset.isFilled = false;
+        colDiv.dataset.isBoard = 'true';
+        colDiv.dataset.isFilled = 'false';
         rowDiv.style.backgroundColor = this.bgColor;
         rowDiv.appendChild(colDiv);
         rowDiv.addEventListener('dragover', this.dragOverEvent);
@@ -84,22 +83,26 @@ class BoardGame {
     console.log(event);
   }
   dragOverEvent(event) {
-    if (!event.target.dataset.isFilled) {
+    if (event.target.dataset.isFilled === 'true') {
       return;
     }
     event.target.style.backgroundColor = 'red';
   }
   dragLeaveEvent(event) {
+    if (event.target.dataset.isFilled === 'true') {
+      return;
+    }
     event.target.style.backgroundColor = 'gray';
   }
   dragEndEvent(event) {
     const target = document.elementsFromPoint(event.clientX, event.clientY);
     if (target[0].dataset.isBoard) {
       target[0].style.backgroundColor = 'black';
+      target[0].dataset.isFilled = true;
     }
-    console.log(target[0].dataset.isBoard);
+    eraserFilledBlock(event);
+  }
+  eraserFilledBlock(event) {
+    console.log(event.target);
   }
 }
-
-const game = new BoardGame('game', 9, 'gray', 500);
-game.generateGame();
