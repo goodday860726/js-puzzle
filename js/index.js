@@ -44,6 +44,8 @@ export class BoardGame {
         const colDiv = document.createElement('div');
         colDiv.classList.add('col');
         colDiv.dataset.id = `${i}:${j}`;
+        colDiv.dataset.rowIndex = `${i}`;
+        colDiv.dataset.colIndex = `${j}`;
         colDiv.dataset.isBoard = 'true';
         colDiv.dataset.isFilled = 'false';
         rowDiv.style.backgroundColor = this.bgColor;
@@ -57,9 +59,13 @@ export class BoardGame {
   }
   generateScore() {
     const fragment = document.createDocumentFragment();
-    const span = document.createElement('span');
-    span.innerText = 'Score: 0';
-    fragment.appendChild(span);
+    const spanPrefix = document.createElement('span');
+    const spanScore = document.createElement('span');
+    spanPrefix.innerText = 'Score: ';
+    spanScore.classList.add('score');
+    spanScore.innerText = 0;
+    fragment.appendChild(spanPrefix);
+    fragment.appendChild(spanScore);
     document.querySelector('.gameScore').appendChild(fragment);
   }
   generateBlock() {
@@ -73,15 +79,14 @@ export class BoardGame {
     // div.addEventListener('dragenter', this.blockEvent);
     div.addEventListener('dragstart', this.blockEvent);
     div.addEventListener('dragend', this.dragEndEvent);
+    div.addEventListener('dragend', this.eraserBingoBlock);
     // div.addEventListener('dragleave', this.blockEvent);
     // div.addEventListener('drop', this.blockEvent);
     fragment.appendChild(div);
     document.querySelector('.gameBlocks').appendChild(fragment);
   }
 
-  blockEvent(event) {
-    console.log(event);
-  }
+  blockEvent(event) {}
   dragOverEvent(event) {
     if (event.target.dataset.isFilled === 'true') {
       return;
@@ -94,15 +99,79 @@ export class BoardGame {
     }
     event.target.style.backgroundColor = 'gray';
   }
+  dragEventHandler() {
+    return (a = {});
+  }
   dragEndEvent(event) {
     const target = document.elementsFromPoint(event.clientX, event.clientY);
     if (target[0].dataset.isBoard) {
       target[0].style.backgroundColor = 'black';
       target[0].dataset.isFilled = true;
     }
-    eraserFilledBlock(event);
   }
-  eraserFilledBlock(event) {
-    console.log(event.target);
+  eraserBingoBlock(event) {
+    const target = document.elementsFromPoint(event.clientX, event.clientY);
+    if (!target[0].dataset.isBoard) {
+      return;
+    }
+    const targetId = target[0].dataset.id;
+    const rowCount = target[1].querySelectorAll('.col').length;
+    const rowCheckArray = [...Array(rowCount)].fill(0);
+    const colCheckArray = [...Array(rowCount)].fill(0);
+    const cellList = target[2].querySelectorAll('.col');
+    cellList.forEach((cell) => {
+      const id = cell.dataset.id;
+      const filled = cell.dataset.isFilled;
+      if (filled === 'true') {
+        const [x, y] = id.split(':');
+        rowCheckArray[x]++;
+        colCheckArray[y]++;
+      }
+    });
+    const findAllIndex = (arr, val) => {
+      const indexes = [];
+      let i = -1;
+      while ((i = arr.indexOf(val, i + 1)) != -1) {
+        indexes.push(i);
+      }
+      return indexes;
+    };
+
+    const clearLine = (index, direction) => {
+      if (direction === 'row') {
+        for (let i = 0; i < index.length; i++) {
+          const targetIndex = index[i];
+          const targetRow = document.querySelectorAll(
+            `[data-row-index='${targetIndex}']`
+          );
+          for (const cell of targetRow) {
+            cell.style.backgroundColor = 'gray';
+            cell.dataset.isFilled = 'false';
+          }
+        }
+      } else if (direction === 'col') {
+        for (let i = 0; i < index.length; i++) {
+          const targetIndex = index[i];
+          const targetRow = document.querySelectorAll(
+            `[data-col-index='${targetIndex}']`
+          );
+          for (const cell of targetRow) {
+            cell.style.backgroundColor = 'gray';
+            cell.dataset.isFilled = 'false';
+          }
+        }
+      }
+    };
+    const rowIndex = findAllIndex(rowCheckArray, rowCount) || [];
+    const colIndex = findAllIndex(colCheckArray, rowCount) || [];
+    if (rowIndex.length || colIndex.length) {
+      console.log('스코어');
+      clearLine(rowIndex, 'row');
+      clearLine(colIndex, 'col');
+      const bingoLine = rowIndex.length + colIndex.length;
+      const scoreSpan = document.querySelector('.score');
+      let score = Number(scoreSpan.innerText) + bingoLine * 9;
+      scoreSpan.innerText = score;
+    }
   }
 }
