@@ -1,0 +1,32 @@
+.gameBlocks {
+  display: flex;
+  border: 1px solid black;
+  padding: 10px;
+  width: 500px;
+  margin-top: 10px;
+  justify-content: space-evenly;
+}
+
+.game {
+  margin: 20px;
+}
+
+.multiBlock {
+  display: grid;
+  grid-template-columns: auto auto;
+}
+
+.stick-row-2 {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto;
+}
+.stick-col-2 {
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto auto;
+}
+
+.dummyBlock {
+  opacity: 0;
+}
